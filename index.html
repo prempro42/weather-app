@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta property="og:title" content="Weather Widget" />
+    <meta property="og:description" content="get a glimpse of the weather of a place." />
+    <title>Check Weather</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css" />
+    <style>
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      .search-bar {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        width: 100%;
+      }
+      .upper-container {
+        width: 100vw;
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body class="columns is-gapless">
+    <div class="upper-container">
+      <div class="page-container p-0 is-half column">
+        <section class="section pt-2 py-0">
+          <div class="container has-text-centered">
+            <h1 class="title">Check Weather!</h1>
+            <p class="subtitle mb-1">Powered by <a href="https://openweathermap.org" target="_blank">open weather map</a></p>
+            <p class="subtitle m-0">Made by <a href="https://prem-kumar-g.netlify.app/" target="_blank">Prem G</a></p>
+          </div>
+        </section>
+        <article class="panel is-primary m-4">
+          <p class="panel-heading has-text-centered" id="card-place-name">... Weather</p>
+          <div class="has-background-primary-light p-2">
+            <div class="is-flex is-align-items-center">
+              <p class="is-flex-grow-1">
+                <img
+                  style="width: 80px"
+                  class="has-background-white"
+                  id="card-weather-icon"
+                  src="https://openweathermap.org/img/wn/04n@2x.png"
+                  alt="Weather icon"
+                />
+              </p>
+              <p class="is-flex-grow-2 my-2 is-size-4 has-text-weight-semibold" id="card-temp">xx.xx <sup>o</sup>C</p>
+              <div class="is-flex-grow-1 is-flex is-justify-content-center is-flex-direction-column">
+                <p id="card-temp-max">max : xx <sup>o</sup>C</p>
+                <p id="card-temp-min">min &nbsp;: xx <sup>o</sup>C</p>
+              </div>
+            </div>
+            <div class="is-flex is-justify-content-space-evenly">
+              <div class="is-flex is-flex-direction-column is-justify-content-space-evenly">
+                <div class="is-flex is-flex-direction-column is-align-items-center">
+                  <p id="card-weather-name">x</p>
+                  <p id="card-weather-desp-name">( x x )</p>
+                </div>
+                <div>
+                  <p id="card-humidity">humidity : x %</p>
+                </div>
+              </div>
+              <div class="is-flex is-flex-direction-column is-align-items-center">
+                <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+                <lottie-player
+                  src="/wind-2.json"
+                  background="transparent"
+                  speed="1"
+                  style="width: 100px; height: 100px"
+                  loop
+                  autoplay
+                ></lottie-player>
+                <span id="card-wind"> wind : x meter/sec</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <div class="mb-5 is-flex is-justify-content-center">
+          <button onclick="getLocation()" class="button is-primary">allow my location</button>
+        </div>
+
+        <article class="panel is-primary search-bar">
+          <div class="panel-block">
+            <p class="control has-icons-left">
+              <input id="input-place-name" class="input pl-2 is-primary" type="text" placeholder="enter your place name here..." />
+              <span class="icon is-left">
+                <i class="fas fa-search" aria-hidden="true"></i>
+              </span>
+            </p>
+            <button onclick="getWeatherData()" class="button is-primary is-light ml-1">Search</button>
+          </div>
+        </article>
+      </div>
+    </div>
+    <!-- is-active -->
+    <div class="modal">
+      <div class="modal-background"></div>
+      <div style="z-index: 1" class="modal-header p-3 is-flex is-justify-content-center">
+        <section style="border-radius: 8px" class="modal-card-body is-flex is-flex-direction-column is-justify-content-center">
+          <p>place not found, make sure place is correct!</p>
+          <button onclick="closeModal()" class="button mt-4 mx-6 is-primary is-outlined">Okay</button>
+        </section>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      function getLocation() {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          let lat = position.coords.latitude
+          let long = position.coords.longitude
+
+          getWeatherData(lat.toFixed(2), long.toFixed(2))
+        })
+      }
+
+      async function getWeatherData(lat, lon) {
+        // console.log(document.querySelector("#input-place-name").value)
+        let response
+        const inputPlace = document.querySelector("#input-place-name").value
+        try {
+          if (lat != undefined && lon != undefined) {
+            console.log("lat inside")
+            response = await axios.get(
+              `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=6a07ff46fc2eded08edc56d20a06ca0a&units=metric`
+            )
+          } else {
+            response = await axios.get(
+              `https://api.openweathermap.org/data/2.5/weather?q=${inputPlace}&appid=6a07ff46fc2eded08edc56d20a06ca0a&units=metric`
+            )
+          }
+          if (response.data.cod === 200) {
+            console.log("inside")
+            document.querySelector("#card-place-name").innerHTML = `${response.data.name} Weather`
+            document.querySelector("#card-weather-icon").src = `https://openweathermap.org/img/wn/${response.data.weather[0].icon}@2x.png`
+            document.querySelector("#card-temp").innerHTML = `${response.data.main.temp} <sup>o</sup>C`
+            document.querySelector("#card-temp-max").innerHTML = `max : ${response.data.main.temp_max} <sup>o</sup>C`
+            document.querySelector("#card-temp-min").innerHTML = `min &nbsp;: ${response.data.main.temp_min} <sup>o</sup>C`
+            document.querySelector("#card-weather-name").innerHTML = response.data.weather[0].main
+            document.querySelector("#card-weather-desp-name").innerHTML = `( ${response.data.weather[0].description} )`
+            document.querySelector("#card-humidity").innerHTML = `humidity : ${response.data.main.humidity} %`
+            document.querySelector("#card-wind").innerHTML = ` wind : ${response.data.wind.speed} meter/sec`
+            document.querySelector("#input-place-name").value = ""
+            // document.querySelector("#input-place-name").focus()
+          } else {
+            alert("something went wrong on server")
+            //call modal
+            document.querySelector(".modal").className = "modal is-active"
+            document.querySelector("#input-place-name").value = ""
+            // document.querySelector("#input-place-name").focus()
+          }
+        } catch (error) {
+          //call modal
+          document.querySelector(".modal").className = "modal is-active"
+          console.error(error)
+          document.querySelector("#input-place-name").value = ""
+          // document.querySelector("#input-place-name").focus()
+        }
+      }
+
+      function closeModal() {
+        document.querySelector(".modal").className = "modal"
+      }
+
+      // call Nybyen Norawy data
+      getWeatherData(77.6, 12.98)
+    </script>
+  </body>
+</html>
